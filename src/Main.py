@@ -1,10 +1,11 @@
+# coding: utf-8
 '''
 Created on 2016/07/06
 
 '''
 
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 if __name__ == '__main__':
     #データの読み込み
@@ -18,7 +19,8 @@ if __name__ == '__main__':
     #ユーザー*アイテムのデータフレーム作成
     #全要素を0で初期化
     df = DataFrame(np.zeros((len(users), len(items))), index=users, columns=items)
-    #評価の代入
+    #評価点の代入
     for i in range(len(original_users)):
         df.ix[original_users[i], original_items[i]] = score[i]
-    print(df)
+    data = df.as_matrix()
+    print(len(data[0]))
