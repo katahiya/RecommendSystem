@@ -6,6 +6,7 @@ Created on 2016/07/06
 
 import numpy as np
 from pandas import DataFrame
+from FC import MatrixFactorization
 
 if __name__ == '__main__':
     #データの読み込み
@@ -23,4 +24,7 @@ if __name__ == '__main__':
     for i in range(len(original_users)):
         df.ix[original_users[i], original_items[i]] = score[i]
     data = df.as_matrix()
-    print(len(data[0]))
+
+    MF = MatrixFactorization(eta=0.5, alpha=0.001, beta=0.001, lam=0.001)
+    MF.fit(data)
+    print(MF.test())
