@@ -25,6 +25,6 @@ if __name__ == '__main__':
         df.ix[original_users[i], original_items[i]] = score[i]
     data = df.as_matrix()
 
-    MF = MatrixFactorization(eta=0.5, alpha=0.001, beta=0.001, lam=0.001)
+    MF = MatrixFactorization(eta=0.0001, alpha=0.1, beta=500, lam=0.1)
     MF.fit(data)
     print(MF.test())

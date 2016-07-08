@@ -10,8 +10,8 @@ from math import fabs
 class MatrixFactorization(object):
     #MatrixFactorizationを実装するクラス
 
-    def __modify_eta(self, count):
-        return 1 / (self.alpha*(count+self.beta))
+    def __update_eta(self, count):
+        self.eta = 1 / (self.alpha*(count+self.beta))
 
     def __init__(self, eta, alpha, beta, lam):
         '''
@@ -21,7 +21,8 @@ class MatrixFactorization(object):
         self.v = None   #アイテムの特徴ベクトル
         self.alpha = alpha
         self.beta = beta
-        self.eta = eta #eta = 1/(alpha(更新回数+beta))の式で更新
+        self.eta = None
+        self.__update_eta(0)     #eta = 1/(alpha(更新回数+beta))の式で更新
         self.lam = lam  #行列の更新に使用
 
     def __get_error(self, dataij, ui, vj):
@@ -44,7 +45,10 @@ class MatrixFactorization(object):
         self.f = self.__get_f(data)
         return fabs(self.f - old_f)
 
-    def fit(self, data, K=30, steps=30, criteria=0.0001):
+    def __update_lambda(self, count):
+        self.lam = 1 / count
+
+    def fit(self, data, K=30, steps=5000, criteria=0.0001):
         n = len(data)   #ユーザー数
         m = len(data[0]) #アイテム数
         count = 0   #更新回数
@@ -57,16 +61,19 @@ class MatrixFactorization(object):
                 for j in range(m):
                     if data[i][j] == 0:
                         continue
-                    ui = self.u[:, i]
-                    vj = self.v[:, j]
+                    ui = self.u[:, i].copy()
+                    vj = self.v[:, j].copy()
                     error = self.__get_error(data[i][j], ui, vj)
                     #パラメータの更新
-                    ui -= self.eta * (-error*vj+self.lam*ui)
-                    vj -= self.eta * (-error*ui+self.lam*vj)
+                    self.u[:, i] -= self.eta * (-error*vj+self.lam*ui)
+                    self.v[:, j] -= self.eta * (-error*ui+self.lam*vj)
                     count += 1
-                    self.eta = self.__modify_eta(count)
+#                     self.__update_lambda
+                    self.__update_eta(count)
             #fの誤差がcriteria未満なら終了
             if self.__get_f_error(data) < criteria:
+                print("stop")
+                print("count is %d"% count)
                 break
 
     def test(self):

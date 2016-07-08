@@ -14,6 +14,6 @@ if __name__ == '__main__':
                   [1, 0, 0, 4],
                   [0, 1, 5, 4],
                   ])
-    MF = MatrixFactorization(eta=0.5, alpha=0.1, beta=10, lam=10)
+    MF = MatrixFactorization(eta=0.0001, alpha=0.1, beta=500, lam=0.1)
     MF.fit(a)
     print(MF.test())
