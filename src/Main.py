@@ -8,9 +8,26 @@ import numpy as np
 from pandas import DataFrame
 from FC import MatrixFactorization
 
-def convert_id_to_index(user, user_id):
-    result_array = np.where(user==user_id)
-    return result_array[0][0]
+def convert_user_id_to_index(users, user_id):
+    #ユーザーidから配列のインデックスを取得
+    return np.where(users==user_id)[0][0]
+
+def convert_index_to_item_id(items, index):
+    #配列のインデックスからアイテムのidを取得
+    return items[index]
+
+def get_item_name(item_id):
+    #アイテムidから対応する映画名を取得
+    f = open("u.item", "r")
+    line = f.readline()
+    while line:
+        info = line.split("|")
+        if int(info[0]) == item_id:
+            f.close()
+            return info[1]
+        line = f.readline()
+    f.close()
+    return None
 
 if __name__ == '__main__':
     #データの読み込み
@@ -30,5 +47,7 @@ if __name__ == '__main__':
     data = df.as_matrix()
     MF = MatrixFactorization()
     MF.fit(data)
-    index = convert_id_to_index(users, 2)
-    print(MF.predict(data, index))
+    index = convert_user_id_to_index(users, 2)
+    item_index = MF.predict(data, index)
+    item_id = convert_index_to_item_id(items, item_index)
+    print(get_item_name(item_id))

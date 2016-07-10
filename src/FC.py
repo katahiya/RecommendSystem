@@ -65,12 +65,11 @@ class MatrixFactorization(object):
                 for j in range(m):
                     if data[i][j] == 0:
                         continue
-                    ui = self.u[:, i].copy()
-                    vj = self.v[:, j].copy()
+                    ui = self.u[:, i]
+                    vj = self.v[:, j]
                     error = self.__get_error(data[i][j], ui, vj)
                     #パラメータの更新
-                    self.u[:, i] -= self.eta * (-error*vj+self.lam*ui)
-                    self.v[:, j] -= self.eta * (-error*ui+self.lam*vj)
+                    (self.u[:, i], self.v[:, j]) = ui-self.eta * (-error*vj+self.lam*ui), vj-self.eta * (-error*ui+self.lam*vj)
                     #反復回数の増加
                     count += 1
                     self.__update_eta(count)
@@ -82,12 +81,16 @@ class MatrixFactorization(object):
 
     @jit
     def get_unrated(self, data, index):
+    #ユーザーのインデックスから未評価のアイテムのインデックスのリストを取得S
         return np.where(data[index]==0)[0]
+    
     @jit
     def predict(self, data, index):
+    #ユーザーのインデックスから推薦するアイテムのインデックスを取得
         unrated = self.get_unrated(data, index)
         unrated_items = np.dot(self.u[:, index].T, self.v[:, unrated])
-        return np.max(unrated_items)
+        plausible_rate = np.max(unrated_items)
+        return unrated[np.where(unrated_items==plausible_rate)[0][0]]
 
     @jit
     def verification(self):
