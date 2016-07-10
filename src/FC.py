@@ -33,7 +33,7 @@ class MatrixFactorization(object):
         return dataij- np.dot(ui.T, vj)
 
     @jit
-    def __get_f(self, data):
+    def __calculate_f(self, data):
     #関数fを求める
         f = 0;
         for i in range(len(data)):
@@ -48,7 +48,7 @@ class MatrixFactorization(object):
     def __update_f(self, data):
     #fの値を更新してその誤差を取得
         old_f = self.f
-        self.f = self.__get_f(data)
+        self.f = self.__calculate_f(data)
         return fabs(self.f - old_f)
 
     @jit
@@ -58,7 +58,7 @@ class MatrixFactorization(object):
         count = 0   #更新回数
         self.u = np.random.rand(K, n)    #K×ユーザー数の行列を生成
         self.v = np.random.rand(K, m)    #K×アイテム数の行列を生成
-        self.f = self.__get_f(data)
+        self.f = self.__calculate_f(data)
         #stepsの回数を上限に行列を修正
         for step in range(steps):
             for i in range(n):
@@ -83,14 +83,23 @@ class MatrixFactorization(object):
     def get_unrated(self, data, index):
     #ユーザーのインデックスから未評価のアイテムのインデックスのリストを取得S
         return np.where(data[index]==0)[0]
-    
+
     @jit
     def predict(self, data, index):
     #ユーザーのインデックスから推薦するアイテムのインデックスを取得
         unrated = self.get_unrated(data, index)
         unrated_items = np.dot(self.u[:, index].T, self.v[:, unrated])
         plausible_rate = np.max(unrated_items)
-        return unrated[np.where(unrated_items==plausible_rate)[0][0]]
+        return unrated[np.where(unrated_items==plausible_rate)[0][0]], plausible_rate
+
+    def get_result_error(self, data):
+        error = 0;
+        for i in range(len(data)):
+            for j in range(len(data[0])):
+                if data[i][j] == 0:
+                    continue
+                error += 0.5 * pow(self.__get_error(data[i][j], self.u[:, i], self.v[:, j]), 2)
+        return error
 
     @jit
     def verification(self):
