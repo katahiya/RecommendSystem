@@ -4,16 +4,19 @@ Created on 2016/07/06
 
 '''
 
-import numpy
+import numpy as np
 from math import fabs
+from numba import jit
 
 class MatrixFactorization(object):
     #MatrixFactorizationを実装するクラス
 
     def __update_eta(self, count):
+        #学習率の更新
+        #eta = 1/(alpha(更新回数+beta))の式で更新
         self.eta = 1 / (self.alpha*(count+self.beta))
 
-    def __init__(self, eta, alpha, beta, lam):
+    def __init__(self, alpha=0.05, beta=500, lam=0.1):
         '''
         Constructor
         '''
@@ -21,13 +24,15 @@ class MatrixFactorization(object):
         self.v = None   #アイテムの特徴ベクトル
         self.alpha = alpha
         self.beta = beta
-        self.eta = None
-        self.__update_eta(0)     #eta = 1/(alpha(更新回数+beta))の式で更新
+        self.eta = None #学習率
+        self.__update_eta(0)
         self.lam = lam  #行列の更新に使用
 
+    @jit
     def __get_error(self, dataij, ui, vj):
-        return dataij- numpy.dot(ui.T, vj)
+        return dataij- np.dot(ui.T, vj)
 
+    @jit
     def __get_f(self, data):
     #関数fを求める
         f = 0;
@@ -36,24 +41,23 @@ class MatrixFactorization(object):
                 if data[i][j] == 0:
                     continue
                 f += 0.5 * pow(self.__get_error(data[i][j], self.u[:, i], self.v[:, j]), 2)
-        f += 0.5 * self.lam * (numpy.linalg.norm(self.u)+numpy.linalg.norm(self.v))
+        f += 0.5 * self.lam * (np.linalg.norm(self.u)+np.linalg.norm(self.v))
         return f
 
-    def __get_f_error(self, data):
+    @jit
+    def __update_f(self, data):
     #fの値を更新してその誤差を取得
         old_f = self.f
         self.f = self.__get_f(data)
         return fabs(self.f - old_f)
 
-    def __update_lambda(self, count):
-        self.lam = 1 / count
-
+    @jit
     def fit(self, data, K=30, steps=5000, criteria=0.0001):
         n = len(data)   #ユーザー数
         m = len(data[0]) #アイテム数
         count = 0   #更新回数
-        self.u = numpy.random.rand(K, n)    #K×ユーザー数の行列を生成
-        self.v = numpy.random.rand(K, m)    #K×アイテム数の行列を生成
+        self.u = np.random.rand(K, n)    #K×ユーザー数の行列を生成
+        self.v = np.random.rand(K, m)    #K×アイテム数の行列を生成
         self.f = self.__get_f(data)
         #stepsの回数を上限に行列を修正
         for step in range(steps):
@@ -67,14 +71,25 @@ class MatrixFactorization(object):
                     #パラメータの更新
                     self.u[:, i] -= self.eta * (-error*vj+self.lam*ui)
                     self.v[:, j] -= self.eta * (-error*ui+self.lam*vj)
+                    #反復回数の増加
                     count += 1
-#                     self.__update_lambda
                     self.__update_eta(count)
-            #fの誤差がcriteria未満なら終了
-            if self.__get_f_error(data) < criteria:
+            #修正後のfの誤差がcriteria未満なら終了
+            if self.__update_f(data) < criteria:
                 print("stop")
                 print("count is %d"% count)
                 break
 
-    def test(self):
-        return numpy.dot(self.u.T, self.v)
+    @jit
+    def get_unrated(self, data, index):
+        return np.where(data[index]==0)[0]
+    @jit
+    def predict(self, data, index):
+        unrated = self.get_unrated(data, index)
+        unrated_items = np.dot(self.u[:, index].T, self.v[:, unrated])
+        return np.max(unrated_items)
+
+    @jit
+    def verification(self):
+        #ユーザーとアイテムの特徴ベクトルから元のデータセットを復元
+        return np.dot(self.u.T, self.v)

@@ -8,6 +8,10 @@ import numpy as np
 from pandas import DataFrame
 from FC import MatrixFactorization
 
+def convert_id_to_index(user, user_id):
+    result_array = np.where(user==user_id)
+    return result_array[0][0]
+
 if __name__ == '__main__':
     #データの読み込み
     original_data = np.loadtxt("u.data", delimiter="\t")
@@ -24,7 +28,7 @@ if __name__ == '__main__':
     for i in range(len(original_users)):
         df.ix[original_users[i], original_items[i]] = score[i]
     data = df.as_matrix()
-
-    MF = MatrixFactorization(eta=0.0001, alpha=0.1, beta=500, lam=0.1)
+    MF = MatrixFactorization()
     MF.fit(data)
-    print(MF.test())
+    index = convert_id_to_index(users, 2)
+    print(MF.predict(data, index))
