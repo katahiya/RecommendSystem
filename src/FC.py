@@ -34,7 +34,7 @@ class MatrixFactorization(object):
 
     @jit
     def __calculate_f(self, data):
-    #関数fを求める
+    #二乗誤差に正則項を加えた関数fを求める
         f = 0;
         for i in range(len(data)):
             for j in range(len(data[0])):
@@ -73,7 +73,7 @@ class MatrixFactorization(object):
                     #反復回数の増加
                     count += 1
                     self.__update_eta(count)
-            #修正後のfの誤差がcriteria未満なら終了
+            #修正前と修正後のfの差がcriteria未満なら終了
             if self.__update_f(data) < criteria:
                 print("stop")
                 print("count is %d"% count)
@@ -93,6 +93,7 @@ class MatrixFactorization(object):
         return unrated[np.where(unrated_items==plausible_rate)[0][0]], plausible_rate
 
     def get_result_error(self, data):
+    #二乗誤差の取得
         error = 0;
         for i in range(len(data)):
             for j in range(len(data[0])):
@@ -103,5 +104,5 @@ class MatrixFactorization(object):
 
     @jit
     def verification(self):
-        #ユーザーとアイテムの特徴ベクトルから元のデータセットを復元
+    #ユーザーとアイテムの特徴ベクトルから元のデータセットを復元
         return np.dot(self.u.T, self.v)

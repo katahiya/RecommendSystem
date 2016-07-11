@@ -30,13 +30,13 @@ def get_item_name(item_id):
     return None
 
 if __name__ == '__main__':
-    test = np.array([[1, 2, 0, 4],
-                  [4, 0, 0, 1],
-                  [1, 1, 0, 5],
-                  [1, 0, 0, 4],
-                  [0, 1, 5, 4],
-                  ])
-#     test = np.random.randint(0, 6, (4, 6))
+#     test = np.array([[1, 2, 0, 4],
+#                   [4, 0, 0, 1],
+#                   [1, 1, 0, 5],
+#                   [1, 0, 0, 4],
+#                   [0, 1, 5, 4],
+#                   ])
+    test = np.random.randint(0, 6, (100, 100))
     user = np.arange(1, len(test)+1)
     item = np.arange(1, len(test[0])+1)
     index = convert_user_id_to_index(user, 4)

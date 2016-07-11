@@ -47,8 +47,8 @@ if __name__ == '__main__':
     data = df.as_matrix()
     MF = MatrixFactorization()
     MF.fit(data)
-    index = convert_user_id_to_index(users, 2)
-    item_index, rate = MF.predict(data, index)
-    item_id = convert_index_to_item_id(items, item_index)
-    print(get_item_name(item_id), rate)
-    print("error=%d"%MF.get_result_error(data))
+    index = convert_user_id_to_index(users, 2)  #ユーザーidに対応するインデックスを取得
+    item_index, rate = MF.predict(data, index)  #ユーザーのインデックスに対してレコメンドするアイテムのインデックスを取得
+    item_id = convert_index_to_item_id(items, item_index)   #アイテムのインデックスに対応するidを取得
+    print(get_item_name(item_id), rate) #レコメンドされたアイテム名を出力
+    print("error=%d"%MF.get_result_error(data)) #RとU^TVの二乗誤差を出力
