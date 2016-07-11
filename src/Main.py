@@ -1,8 +1,4 @@
 # coding: utf-8
-'''
-Created on 2016/07/06
-
-'''
 
 import numpy as np
 from pandas import DataFrame
